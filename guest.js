@@ -26,10 +26,14 @@ const results = await Promise.all(chestReference.map((url) => fetch('https://inf
 		}
 		chestsNbr++;
 	}
+	console.log('Nombre de cofres non vides: ' + chestsNbrNotEmpty);
+	console.log('Nombre de cofres : ' + chestsNbr);
+	console.log('Erreur ouverture de coffre : ' + ErrChest);
+	console.log('Erreur entrée pièce : ' + ErrRoom);
 }
 //Rentrer dans toutes les pièces du chateau
 async function fetchAllRooms(rooms) {
-	await Promise.all(rooms.map(room => fetch(room)
+	const rslt = await Promise.all(rooms.map((room) => fetch(room)
 	.then(res => { 
 		            if (res.ok ) 
 						             {  
@@ -45,19 +49,17 @@ async function fetchAllRooms(rooms) {
 														fetchAllRooms((JsonRespense.rooms).map(room => 'https://infinite-castles.herokuapp.com' + room));
 													}
 													
-												})
+												return 1;})
 												
-						} else  {ErrRoom++;}
+						} else  {ErrRoom++; return 0;}
+
 					 }
 
-			).catch(error=>{ ErrRoom++})
+			).catch(error=>{ ErrRoom++; return 0})
 		)
+
 	)
-	console.log('Nombre de cofres non vides: ' + chestsNbrNotEmpty);
-	console.log('Nombre de cofres : ' + chestsNbr);
-	console.log('Erreur ouverture de coffre : ' + ErrChest);
-	console.log('Erreur entrée pièce : ' + ErrRoom);
 }
 
-fetchAllRooms(['https://infinite-castles.herokuapp.com/castles/1/rooms/entry'])
+fetchAllRooms(['https://infinite-castles.herokuapp.com/castles/1/rooms/entry']);
 
