@@ -1,39 +1,66 @@
+var tmp_room = 1
+
 function seeing_arround(reference){
-	
-	var nbChests = 0;
-	var NbNotEmptyChests = 0;
-	
 
 	var requestURL = 'https://infinite-castles.herokuapp.com' + reference;
 	
 	var XMLHttpRequest = require('xhr2');
 	var request = new XMLHttpRequest();
 	
+	tmp_room++;
+
 	request.open('GET', requestURL);
 	request.responseType = 'json';
 	request.send();
 	request.onload = function() {
 		var objects = request.response;
 		if (objects.chests != null) {
+			console.log(' ------ tous les coffres ------', objects.chests)
 			count_chests(objects.chests, nbChests, NbNotEmptyChests);
 		}
 		if (objects.rooms != null) {
-			get_in(objects.rooms);
+			for (var i = 0; i < objects.rooms; i++) {
+				seeing_arround(objects.rooms[i], nbChests, NbNotEmptyChests);
+			}
 		}
 	}
 }
 
-function get_in(Myroom){  
-	console.log(Myroom)
-}
+function count_chests(Mychests, nbChests, NbNotEmptyChests){
+	var len = Mychests.length
+	nbChests = nbChests + len
+	for (var i = 0; i < len; i++) {
+		var requestURL = 'https://infinite-castles.herokuapp.com' + Mychests[i];
+		console.log(i + ' coffre ------ ', requestURL)
+		var XMLHttpRequest = require('xhr2');
+		var req = new XMLHttpRequest();
+		req.open('GET', requestURL);
+		req.responseType = 'json';
+		req.send();
 
-function count_chests(Mychests){
-	console.log(Mychests)
+		req.onload = function() {
+		var chts = req.response;
+		console.log('coffre : response ' + req.response)
+		if (chts.status != 'This chest is empty :/ Try another one!') {
+				NbNotEmptyChests = NbNotEmptyChests + 1
+			} 
+		}
+	}
 }
-   //Access to the rooms
-   
-seeing_arround('/castles/1/rooms/534ade42-c185-460e-a57e-3d0baf6342bf');
-//seeing_arround('/castles/1/chests/61690f30-5cc4-464a-b554-bb6bac976995');
-   //return "Hi, "+ name;
+ 
+
+var fin, début;
+
+var nbChests = 0, NbNotEmptyChests = 0;
+
+start = new Date();
+
+seeing_arround('/castles/1/rooms/entry', nbChests, NbNotEmptyChests);
+
+end = new Date();
+
+console.log('Durée du parcours : ' + (end.getTime() - start.getTime()) + ' msec');
+console.log('Nombre de cofres : ' + nbChests);
+console.log('Nombre de cofres non vide : ' + NbNotEmptyChests);
 
 
