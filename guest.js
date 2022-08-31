@@ -1,26 +1,37 @@
 //Les coffres
 var chests = []; 
+var ErrChest = 0;
+var ErrRoom = 0;
 //Récupérer le contenu de tous les cofres d'une pièce
 async function fetchAllChestReference(chestReference) {
-const results = await Promise.all(chestReference.map((url) => fetch('https://infinite-castles.herokuapp.com' + url).then(r => r.json())));
+const results = await Promise.all(chestReference.map((url) => fetch('https://infinite-castles.herokuapp.com' + url).then(r => r.json()).catch(error=>{ ErrChest++; })));
  console.log(results);
  chests.concat(results);
 }
 //Rentrer dans toutes les pièces du chateau
 async function fetchAllRooms(rooms) {
-	const JsonRespense = await Promise.all(rooms.map(room => fetch(room)
-	.then(res => res.json())
-	));
-	console.log(JsonRespense);
-	if (JsonRespense[0].chests != null){
-		fetchAllChestReference(JsonRespense[0].chests)
-	}
-	if (JsonRespense[0].rooms != null){
-		fetchAllRooms((JsonRespense[0].rooms).map(room => 'https://infinite-castles.herokuapp.com' + room));
-	}
+	await Promise.all(rooms.map(room => fetch(room)
+	.then(res => { if (res.ok ) {
+							res.json().then(data => {
+																JsonRespense = data; 
+																console.log(JsonRespense);
+																if (JsonRespense.chests != null){
+																	fetchAllChestReference(JsonRespense.chests)
+																}
+																if (JsonRespense.rooms != null){
+																	fetchAllRooms((JsonRespense.rooms).map(room => 'https://infinite-castles.herokuapp.com' + room));
+																}
+															}
+												)
+						}else  {console.log("Erreur");}	
+
+					}
+			).catch(error=>{ ErrRoom++; })
+		)
+	)
 }
 
-
+//Main
 fetchAllRooms(['https://infinite-castles.herokuapp.com/castles/1/rooms/entry']);
 for (var i = chests.length - 1; i >= 0; i--) {
 	console.log(chests[i]);
